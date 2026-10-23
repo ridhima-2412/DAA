@@ -1,0 +1,109 @@
+
+#include <iostream>
+#include <vector>
+using namespace std;
+
+using Matrix = vector<vector<int>>;
+
+Matrix multiply(Matrix A, Matrix B) {
+    int n = A.size();
+    Matrix C(n, vector<int>(n, 0));
+
+    if (n == 1) {
+        C[0][0] = A[0][0] * B[0][0];
+        return C;
+    }
+
+    int k = n / 2;
+    Matrix a(k, vector<int>(k)), b = a, c = a, d = a;
+    Matrix e(k, vector<int>(k)), f = e, g = e, h = e;
+
+    for (int i = 0; i < k; i++)
+        for (int j = 0; j < k; j++) {
+            a[i][j] = A[i][j];
+            b[i][j] = A[i][j + k];
+            c[i][j] = A[i + k][j];
+            d[i][j] = A[i + k][j + k];
+            e[i][j] = B[i][j];
+            f[i][j] = B[i][j + k];
+            g[i][j] = B[i + k][j];
+            h[i][j] = B[i + k][j + k];
+        }
+
+    auto add = [](Matrix X, Matrix Y) {
+        int n = X.size();
+        Matrix Z(n, vector<int>(n));
+        for (int i = 0; i < n; i++)
+            for (int j = 0; j < n; j++)
+                Z[i][j] = X[i][j] + Y[i][j];
+        return Z;
+    };
+
+    auto sub = [](Matrix X, Matrix Y) {
+        int n = X.size();
+        Matrix Z(n, vector<int>(n));
+        for (int i = 0; i < n; i++)
+            for (int j = 0; j < n; j++)
+                Z[i][j] = X[i][j] - Y[i][j];
+        return Z;
+    };
+
+    Matrix p1 = multiply(a, sub(f, h));
+    Matrix p2 = multiply(add(a, b), h);
+    Matrix p3 = multiply(add(c, d), e);
+    Matrix p4 = multiply(d, sub(g, e));
+    Matrix p5 = multiply(add(a, d), add(e, h));
+    Matrix p6 = multiply(sub(b, d), add(g, h));
+    Matrix p7 = multiply(sub(a, c), add(e, f));
+
+    Matrix t1 = add(sub(add(p5, p4), p2), p6);
+    Matrix t2 = add(p1, p2);
+    Matrix t3 = add(p3, p4);
+    Matrix t4 = sub(sub(add(p1, p5), p3), p7);
+
+    for (int i = 0; i < k; i++)
+        for (int j = 0; j < k; j++) {
+            C[i][j] = t1[i][j];
+            C[i][j + k] = t2[i][j];
+            C[i + k][j] = t3[i][j];
+            C[i + k][j + k] = t4[i][j];
+        }
+
+    return C;
+}
+
+int main() {
+    int n;
+    cin >> n;
+
+    Matrix A(n, vector<int>(n)), B = A;
+
+    for (auto &row : A)
+        for (int &x : row) cin >> x;
+
+    for (auto &row : B)
+        for (int &x : row) cin >> x;
+
+    // Pad matrices to the next power of 2
+    int m = 1;
+    while (m < n) m *= 2;
+
+    Matrix X(m, vector<int>(m, 0));
+    Matrix Y(m, vector<int>(m, 0));
+
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < n; j++) {
+            X[i][j] = A[i][j];
+            Y[i][j] = B[i][j];
+        }
+
+    Matrix C = multiply(X, Y);
+
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++)
+            cout << C[i][j] << " ";
+        cout << '\n';
+    }
+
+    return 0;
+}
