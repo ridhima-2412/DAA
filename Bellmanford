@@ -1,0 +1,37 @@
+
+#include <iostream>
+#include <vector>
+#include <climits>
+using namespace std;
+
+int main() {
+    int V, E, u, v, w, src;
+    cin >> V >> E;
+
+    vector<vector<int>> edges(E, vector<int>(3));
+    for (auto &e : edges)
+        cin >> e[0] >> e[1] >> e[2];
+
+    cin >> src;
+    vector<int> dist(V, INT_MAX);
+    dist[src] = 0;
+
+    for (int i = 0; i < V - 1; i++)
+        for (auto e : edges)
+            if (dist[e[0]] != INT_MAX &&
+                dist[e[0]] + e[2] < dist[e[1]])
+                dist[e[1]] = dist[e[0]] + e[2];
+
+    for (auto e : edges)
+        if (dist[e[0]] != INT_MAX &&
+            dist[e[0]] + e[2] < dist[e[1]]) {
+            cout << "Negative cycle exists";
+            return 0;
+        }
+
+    for (int i = 0; i < V; i++)
+        cout << i << " : "
+             << (dist[i] == INT_MAX ? -1 : dist[i]) << '\n';
+
+    return 0;
+}
